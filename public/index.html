@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAppPrize</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebAppPrize</h1>
+        <p>Welcome to the prize web application.</p>
+        <div id="shops"></div>
+        <div id="shop-types"></div>
+        <div id="last-update"></div>
+    </div>
+
+    <script>
+        // Load shops
+        fetch('/api/shops')
+            .then(response => response.json())
+            .then(data => {
+                const shopsDiv = document.getElementById('shops');
+                shopsDiv.innerHTML = '<h2>Shops</h2><ul>' + data.map(shop => `<li>${shop.ShopName} (${shop.ShopType})</li>`).join('') + '</ul>';
+            })
+            .catch(error => console.error('Error loading shops:', error));
+
+        // Load shop types
+        fetch('/api/shop-types')
+            .then(response => response.json())
+            .then(data => {
+                const typesDiv = document.getElementById('shop-types');
+                typesDiv.innerHTML = '<h2>Shop Types</h2><ul>' + data.map(type => `<li>${type}</li>`).join('') + '</ul>';
+            })
+            .catch(error => console.error('Error loading shop types:', error));
+
+        // Load last update
+        fetch('/api/last-update')
+            .then(response => response.json())
+            .then(data => {
+                const updateDiv = document.getElementById('last-update');
+                updateDiv.innerHTML = '<h2>Last Update</h2><p>' + new Date(data.lastUpdate).toLocaleString() + '</p>';
+            })
+            .catch(error => console.error('Error loading last update:', error));
+    </script>
+</body>
+</html>
