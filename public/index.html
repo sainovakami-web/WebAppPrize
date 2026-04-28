@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GIF Project Prize - Výběr obchodu</title>
+  <title>Yarn Finder - Výběr obchodu</title>
   <style>
     * {
       margin: 0;
@@ -324,9 +324,9 @@
       color: white;
     }
 
-    .btn-print {
-      background: #f0f0f0;
-      color: #333;
+    .btn-clear {
+      background: #d198cc;
+      color: white;
     }
 
     .btn-confirm:hover {
@@ -334,8 +334,26 @@
       box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
     }
 
-    .btn-print:hover {
-      background: #e0e0e0;
+    .btn-clear:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .branch-info {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f0f4ff;
+      border-radius: 8px;
+      border: 1px solid #dce6fb;
+      color: #333;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .branch-info strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #2c3e50;
     }
   </style>
 </head>
@@ -366,6 +384,8 @@
         </div>
         <div class="error" id="error"></div>
       </div>
+
+      <div class="branch-info" id="branchInfo"></div>
       
       <div class="loading" id="loading">Načítání dat...</div>
     </form>
@@ -380,7 +400,7 @@
 
     <div class="button-group">
       <button type="button" id="btn-confirm" class="btn-confirm">Potvrdit</button>
-      <button type="button" id="btn-print" class="btn-print">Vytisknout seznam</button>
+      <button type="button" id="btn-clear" class="btn-clear">Smazat výběr</button>
     </div>
   </div>
   
@@ -388,6 +408,7 @@
     // Dropdown state
     let selectedShopType = "";
     let selectedShopName = "";
+    let selectedShopId = "";
     let allShops = [];
     let shopTypes = [];
     
@@ -406,7 +427,8 @@
     const errorDiv = document.getElementById("error");
     const resultCountDiv = document.getElementById("resultCount");
     const confirmButton = document.getElementById("btn-confirm");
-    const printButton = document.getElementById("btn-print");
+    const clearButton = document.getElementById("btn-clear");
+    const branchInfo = document.getElementById("branchInfo");
     const mapContainer = document.getElementById("map-container");
     const mapIframe = mapContainer.querySelector("iframe");
     
@@ -432,7 +454,19 @@
         return "obchodů";
       }
     }
-    
+
+    function formatBranchAddress(branch) {
+      const city = branch.City || "Neznámé město";
+      const index = branch.Index || "NE";
+      const address = branch.Address || "Neznámá adresa";
+      return `${city}, ${index}, ${address}`;
+    }
+
+    function renderBranchAddresses(branches) {
+      const lines = branches.map(branch => `<li>${formatBranchAddress(branch)}</li>`).join('');
+      branchInfo.innerHTML = `<strong>Pobočky:</strong><ul>${lines}</ul>`;
+    }
+
     // Update result count display
     function updateResultCount(count) {
       if (count === 0) {
@@ -511,6 +545,8 @@
     function selectShopType(type, element) {
       selectedShopType = type;
       selectedShopName = "";
+      selectedShopId = "";
+      branchInfo.innerHTML = "";
       
       // Update toggle text
       shopTypeToggle.innerHTML = `<span>${type}</span>`;
@@ -531,6 +567,12 @@
       shopNameToggle.classList.remove("active");
       shopNameToggle.innerHTML = `<span class="dropdown-placeholder">-- Vyberte obchod --</span>`;
       
+      if (type === "online+offline") {
+        mapContainer.classList.add("show");
+      } else {
+        mapContainer.classList.remove("show");
+      }
+      
       errorDiv.classList.remove("show");
     }
     
@@ -546,27 +588,37 @@
         filteredShops = allShops.filter(shop => shop.ShopType === type);
       }
       
+      // Seskupení podle ShopID a získání jednoho záznamu pro každý obchod
+      const shopsById = filteredShops.reduce((map, shop) => {
+        if (!map.has(shop.ShopID)) {
+          map.set(shop.ShopID, shop);
+        }
+        return map;
+      }, new Map());
+
+      const uniqueShops = Array.from(shopsById.values());
+
       // Seřaď obchody abecedně od A do Z
-      filteredShops.sort((a, b) => {
-        return a.ShopName.localeCompare(b.ShopName, 'cs');
-      });
-      
+      uniqueShops.sort((a, b) => a.ShopName.localeCompare(b.ShopName, 'cs'));
+
       shopNameMenu.innerHTML = "";
-      filteredShops.forEach(shop => {
+      uniqueShops.forEach(shop => {
         const li = document.createElement("li");
         li.textContent = shop.ShopName;
         li.dataset.value = shop.ShopName;
-        li.addEventListener("click", () => selectShopName(shop.ShopName, li));
+        li.dataset.shopId = shop.ShopID;
+        li.addEventListener("click", () => selectShopName(shop.ShopName, shop.ShopID, li));
         shopNameMenu.appendChild(li);
       });
-      
-      // Update result count
-      updateResultCount(filteredShops.length);
+
+      const uniqueCount = new Set(filteredShops.map(item => item.ShopID)).size;
+      updateResultCount(uniqueCount);
     }
     
     // Select shop name
-    function selectShopName(name, element) {
+    function selectShopName(name, shopId, element) {
       selectedShopName = name;
+      selectedShopId = shopId;
       
       // Update toggle text
       shopNameToggle.innerHTML = `<span>${name}</span>`;
@@ -578,32 +630,62 @@
       
       // Close dropdown
       closeDropdown(shopNameToggle, shopNameMenu);
+
+      if (selectedShopType === "online+offline") {
+        const branches = allShops
+          .filter(shop => shop.ShopID === selectedShopId && shop.LocationID)
+          .sort((a, b) => {
+            if (a.City === b.City) return a.Address.localeCompare(b.Address, 'cs');
+            return (a.City || '').localeCompare(b.City || '', 'cs');
+          });
+
+        if (branches.length === 0) {
+          branchInfo.innerHTML = '<strong>Pobočky:</strong><div>Adresy poboček nejsou k dispozici.</div>';
+        } else {
+          renderBranchAddresses(branches);
+        }
+      } else {
+        branchInfo.innerHTML = "";
+      }
     }
     
-    printButton.addEventListener("click", function() {
-      window.print();
+    clearButton.addEventListener("click", function() {
+      form.reset();
+      selectedShopType = "";
+      selectedShopName = "";
+      shopTypeToggle.innerHTML = `<span class="dropdown-placeholder">-- Vyberte typ prodejny --</span>`;
+      shopTypeToggle.classList.remove("active");
+      shopTypeMenu.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+      shopNameToggle.innerHTML = `<span class="dropdown-placeholder">-- Vyberte obchod --</span>`;
+      shopNameToggle.classList.remove("active");
+      shopNameToggle.disabled = true;
+      shopNameMenu.innerHTML = "";
+      resultDiv.classList.remove("show");
+      errorDiv.classList.remove("show");
+      branchInfo.innerHTML = "";
+      updateResultCount(0);
+      mapIframe.src = baseMapUrl + extraMapParams;
+      mapContainer.classList.remove("show");
     });
-    
+
     confirmButton.addEventListener("click", function() {
       if (!selectedShopType || !selectedShopName) {
-        errorDiv.textContent = "Prosím, vyberte obchod i typ prodejny";
+        errorDiv.textContent = "Prosím, vyberte obchod i typ prodejny.";
         errorDiv.classList.add("show");
         return;
       }
+      errorDiv.classList.remove("show");
 
-      // Build map filter URL for the selected shop
       const filterValue = `Shops/name eq '${selectedShopName}'`;
       const filterParam = `&$filter=${encodeURIComponent(filterValue)}`;
       mapIframe.src = baseMapUrl + extraMapParams + filterParam;
       mapContainer.classList.add("show");
 
-      resultText.textContent = `Vybrali jste obchod: ${selectedShopName} (${selectedShopType})`;
-      resultDiv.classList.add("show");
-      errorDiv.classList.remove("show");
-
       const selectedShop = allShops.find(shop => shop.ShopName === selectedShopName);
       if (selectedShop && selectedShop.Website) {
         window.open(selectedShop.Website.trim(), '_blank');
+      } else {
+        console.warn('Website not found for shop:', selectedShopName);
       }
     });
     
@@ -637,7 +719,6 @@
     // Format date to Czech format: DD.MM.YYYY HH:mm
     function formatDateToCzech(dateString) {
       const date = new Date(dateString);
-      date.setHours(date.getHours() + 2);
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
@@ -674,7 +755,7 @@
   </script>
 
   <footer>
-    Ceny jsou uvedeny bez započtení akcí a slev. Data jsou zadávána ručně, a proto mohou obsahovat chyby. Poslední aktualizace databáze: <span id="lastUpdate">Načítání...</span>
+     Data jsou zadávána ručně, a proto mohou obsahovat chyby. Poslední aktualizace databáze: <span id="lastUpdate">Načítání...</span>
   </footer>
 </body>
 </html>

@@ -7,13 +7,13 @@ const port = process.env.PORT || 3000;
 
 // Database configuration
 const dbConfig = {
-  server: "232701.database.windows.net",
-  database: "GIF_projekt_prize",
+  server: process.env.DB_SERVER || "232701.database.windows.net",
+  database: process.env.DB_DATABASE || "GIF_projekt_prize",
   authentication: {
     type: "default",
     options: {
-      userName: "admin232701",
-      password: "GIFVUT2026@"
+      userName: process.env.DB_USER || "admin232701",
+      password: process.env.DB_PASSWORD || "GIFVUT2026@"
     }
   },
   options: {
@@ -36,15 +36,29 @@ app.get("/api/shops", async (req, res) => {
   try {
     const pool = new sql.ConnectionPool(dbConfig);
     await pool.connect();
-    
-    const result = await pool.request()
-      .query("SELECT DISTINCT TRIM(ShopName) as ShopName, TRIM(ShopType) as ShopType, TRIM(Website) as Website FROM Shops ORDER BY ShopName");
-    
+
+    const result = await pool.request().query(`
+      SELECT DISTINCT
+        S.ShopID,
+        TRIM(S.ShopName) AS ShopName,
+        TRIM(S.Website) AS Website,
+        TRIM(S.ShopType) AS ShopType,
+        L.LocationID,
+        TRIM(L.City) AS City,
+        TRIM(L.[Index]) AS Index,
+        TRIM(L.Address) AS Address,
+        L.Latitude,
+        L.Longitude
+      FROM Shops S
+      LEFT JOIN ShopLocation L ON S.ShopID = L.ShopID
+      ORDER BY ShopName
+    `);
+
     await pool.close();
     res.json(result.recordset);
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).json({ error: "Database connection failed" });
+    res.status(500).json({ error: "Database error" });
   }
 });
 
@@ -61,7 +75,8 @@ app.get("/api/shop-types", async (req, res) => {
     res.json(result.recordset.map(r => r.ShopType));
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).json({ error: "Database connection failed" });
+    // Fallback mock data
+    res.json(["online", "offline", "online+offline"]);
   }
 });
 
