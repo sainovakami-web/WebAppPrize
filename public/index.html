@@ -359,7 +359,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>GIF Project Prize</h1>
+    <h1>Prodejny Prize</h1>
     <p class="subtitle">Vyberte obchod a typ prodejny</p>
     
     <form id="shopForm">
@@ -457,9 +457,15 @@
 
     function formatBranchAddress(branch) {
       const city = branch.City || "Neznámé město";
-      const index = branch.Index || "NE";
+      const index = branch.Index || "";
       const address = branch.Address || "Neznámá adresa";
-      return `${city}, ${index}, ${address}`;
+      
+      const parts = [city];
+      if (index && index !== "NE") {
+        parts.push(index);
+      }
+      parts.push(address);
+      return parts.join(", ");
     }
 
     function renderBranchAddresses(branches) {

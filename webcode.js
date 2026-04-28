@@ -45,7 +45,7 @@ app.get("/api/shops", async (req, res) => {
         TRIM(S.ShopType) AS ShopType,
         L.LocationID,
         TRIM(L.City) AS City,
-        TRIM(L.[Index]) AS ZipCode, -- Renamed to avoid conflicts
+        TRIM(L.[Index]) AS ZipCode, 
         TRIM(L.Address) AS Address,
         L.Latitude,
         L.Longitude
