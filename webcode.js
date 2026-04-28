@@ -34,31 +34,30 @@ app.get("/", (req, res) => {
 // API endpoint to get shops
 app.get("/api/shops", async (req, res) => {
   try {
-    const pool = new sql.ConnectionPool(dbConfig);
-    await pool.connect();
+    // Use global pool for better reliability
+    let pool = await sql.connect(dbConfig);
 
-    const result = await pool.request().query(`
-      SELECT DISTINCT
+    const result = await pool.request().query(
+      `SELECT 
         S.ShopID,
         TRIM(S.ShopName) AS ShopName,
         TRIM(S.Website) AS Website,
         TRIM(S.ShopType) AS ShopType,
         L.LocationID,
         TRIM(L.City) AS City,
-        TRIM(L.[Index]) AS Index,
+        TRIM(L.[Index]) AS ZipCode, -- Renamed to avoid conflicts
         TRIM(L.Address) AS Address,
         L.Latitude,
         L.Longitude
       FROM Shops S
       LEFT JOIN ShopLocation L ON S.ShopID = L.ShopID
-      ORDER BY ShopName
-    `);
+      ORDER BY ShopName`
+    );
 
-    await pool.close();
     res.json(result.recordset);
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: err.message }); // Return error message for debugging
   }
 });
 
@@ -86,13 +85,10 @@ app.get("/api/last-update", async (req, res) => {
     const pool = new sql.ConnectionPool(dbConfig);
     await pool.connect();
     
-    // Try to get the latest update from the database
-    // First, check if there's an UpdatedAt column, otherwise use GETDATE()
+    // Since UpdatedAt column doesn't exist, use current date
     const result = await pool.request()
       .query(`
-        SELECT TOP 1 
-          MAX(CAST(ISNULL([UpdatedAt], GETDATE()) AS DATETIME)) as lastUpdate
-        FROM Shops
+        SELECT GETDATE() as lastUpdate
       `);
     
     await pool.close();
