@@ -1,51 +1,680 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAppPrize</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        .container { max-width: 800px; margin: 0 auto; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF Project Prize - Výběr obchodu</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+    
+    label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    /* Custom dropdown styling */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+    
+    .dropdown-toggle {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      color: #333;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+    }
+    
+    .dropdown-toggle:hover {
+      border-color: #667eea;
+    }
+    
+    .dropdown-toggle.active {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .dropdown-toggle::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border: solid #667eea;
+      border-width: 2px 2px 0 0;
+      transform: rotate(45deg);
+      transition: transform 0.3s ease;
+    }
+    
+    .dropdown-toggle.open::after {
+      transform: rotate(-135deg);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #667eea;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dropdown-menu.open {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .dropdown-menu li {
+      padding: 10px 12px;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .dropdown-menu li:last-child {
+      border-bottom: none;
+    }
+    
+    .dropdown-menu li:hover {
+      background-color: #f0f0f0;
+      padding-left: 16px;
+    }
+    
+    .dropdown-menu li.selected {
+      background-color: #e8f0ff;
+      color: #667eea;
+      font-weight: 600;
+    }
+    
+    .dropdown-menu li.disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .dropdown-menu li.disabled:hover {
+      background-color: transparent;
+      padding-left: 12px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-submit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-reset {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    .btn-reset:hover {
+      background: #e0e0e0;
+    }
+    
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 5px;
+      display: none;
+    }
+    
+    .result.show {
+      display: block;
+      border-left: 4px solid #667eea;
+    }
+    
+    .result-text {
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      color: #667eea;
+      font-size: 14px;
+    }
+    
+    .loading.show {
+      display: block;
+    }
+    
+    .error {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .error.show {
+      display: block;
+    }
+
+    .dropdown-placeholder {
+      opacity: 0.5;
+    }
+
+    .result-count {
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #667eea;
+      font-weight: 600;
+      background: #f0f4ff;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    .result-count.show {
+      display: block;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: #999;
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 11px;
+      line-height: 1.4;
+      z-index: 100;
+    }
+
+    footer a {
+      color: #999;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    body {
+      padding-bottom: 60px;
+    }
+
+    #map-container {
+      display: none;
+      margin-top: 30px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      max-width: 100%;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #map-container.show {
+      display: block;
+    }
+
+    #map-container iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      display: block;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .button-group button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-confirm {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-print {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-confirm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-print:hover {
+      background: #e0e0e0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>WebAppPrize</h1>
-        <p>Welcome to the prize web application.</p>
-        <div id="shops"></div>
-        <div id="shop-types"></div>
-        <div id="last-update"></div>
+  <div class="container">
+    <h1>GIF Project Prize</h1>
+    <p class="subtitle">Vyberte obchod a typ prodejny</p>
+    
+    <form id="shopForm">
+      <div class="form-group">
+        <label for="shopType">Typ prodejny:</label>
+        <div class="custom-dropdown" id="shopTypeDropdown">
+          <button type="button" class="dropdown-toggle" id="shopTypeToggle">
+            <span class="dropdown-placeholder">-- Vyberte typ prodejny --</span>
+          </button>
+          <ul class="dropdown-menu" id="shopTypeMenu"></ul>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="shopName">Vyberte obchod:</label>
+        <div class="result-count" id="resultCount"></div>
+        <div class="custom-dropdown" id="shopNameDropdown">
+          <button type="button" class="dropdown-toggle" id="shopNameToggle" disabled>
+            <span class="dropdown-placeholder">-- Vyberte obchod --</span>
+          </button>
+          <ul class="dropdown-menu" id="shopNameMenu"></ul>
+        </div>
+        <div class="error" id="error"></div>
+      </div>
+      
+      <div class="loading" id="loading">Načítání dat...</div>
+    </form>
+    
+    <div class="result" id="result">
+      <div class="result-text" id="resultText"></div>
     </div>
 
-    <script>
-        // Load shops
-        fetch('/api/shops')
-            .then(response => response.json())
-            .then(data => {
-                const shopsDiv = document.getElementById('shops');
-                shopsDiv.innerHTML = '<h2>Shops</h2><ul>' + data.map(shop => `<li>${shop.ShopName} (${shop.ShopType})</li>`).join('') + '</ul>';
-            })
-            .catch(error => console.error('Error loading shops:', error));
+    <div id="map-container">
+      <iframe title="GIF_prize_projekt" src="https://app.powerbi.com/view?r=eyJrIjoiN2NiZDIwMzQtYjY2Yi00Y2FlLTg2NTgtNzE0MzRmMjBhNjJhIiwidCI6ImM2M2NlNzI5LWNhMTctNGU1Mi1hYTJkLTk2Yjc5NDg5YTU0MiIsImMiOjh9&navContentPaneEnabled=false&pageView=fitToWidth" allowFullScreen="true"></iframe>
+    </div>
 
-        // Load shop types
-        fetch('/api/shop-types')
-            .then(response => response.json())
-            .then(data => {
-                const typesDiv = document.getElementById('shop-types');
-                typesDiv.innerHTML = '<h2>Shop Types</h2><ul>' + data.map(type => `<li>${type}</li>`).join('') + '</ul>';
-            })
-            .catch(error => console.error('Error loading shop types:', error));
+    <div class="button-group">
+      <button type="button" id="btn-confirm" class="btn-confirm">Potvrdit</button>
+      <button type="button" id="btn-print" class="btn-print">Vytisknout seznam</button>
+    </div>
+  </div>
+  
+  <script>
+    // Dropdown state
+    let selectedShopType = "";
+    let selectedShopName = "";
+    let allShops = [];
+    let shopTypes = [];
+    
+    // Base URL for PowerBI map
+    const baseMapUrl = "https://app.powerbi.com/view?r=eyJrIjoiN2NiZDIwMzQtYjY2Yi00Y2FlLTg2NTgtNzE0MzRmMjBhNjJhIiwidCI6ImM2M2NlNzI5LWNhMTctNGU1Mi1hYTJkLTk2Yjc5NDg5YTU0MiIsImMiOjh9";
+    const extraMapParams = "&navContentPaneEnabled=false&pageView=fitToWidth";
+    
+    const shopTypeToggle = document.getElementById("shopTypeToggle");
+    const shopTypeMenu = document.getElementById("shopTypeMenu");
+    const shopNameToggle = document.getElementById("shopNameToggle");
+    const shopNameMenu = document.getElementById("shopNameMenu");
+    const form = document.getElementById("shopForm");
+    const resultDiv = document.getElementById("result");
+    const resultText = document.getElementById("resultText");
+    const loadingDiv = document.getElementById("loading");
+    const errorDiv = document.getElementById("error");
+    const resultCountDiv = document.getElementById("resultCount");
+    const confirmButton = document.getElementById("btn-confirm");
+    const printButton = document.getElementById("btn-print");
+    const mapContainer = document.getElementById("map-container");
+    const mapIframe = mapContainer.querySelector("iframe");
+    
+    // Toggle dropdown open/close
+    function toggleDropdown(toggle, menu) {
+      toggle.classList.toggle("open");
+      menu.classList.toggle("open");
+    }
+    
+    // Close dropdown
+    function closeDropdown(toggle, menu) {
+      toggle.classList.remove("open");
+      menu.classList.remove("open");
+    }
+    
+    // Helper function for proper declension of "obchod"
+    function declineShop(count) {
+      if (count === 1) {
+        return "obchod";
+      } else if (count >= 2 && count <= 4) {
+        return "obchody";
+      } else {
+        return "obchodů";
+      }
+    }
+    
+    // Update result count display
+    function updateResultCount(count) {
+      if (count === 0) {
+        resultCountDiv.classList.remove("show");
+        resultCountDiv.textContent = "";
+      } else {
+        const shopWord = declineShop(count);
+        resultCountDiv.textContent = `Nalezeno: ${count} ${shopWord}`;
+        resultCountDiv.classList.add("show");
+      }
+    }
+    
+    // Setup dropdown listeners
+    function setupDropdownListeners() {
+      shopTypeToggle.addEventListener("click", (e) => {
+        e.preventDefault();
+        closeDropdown(shopNameToggle, shopNameMenu);
+        toggleDropdown(shopTypeToggle, shopTypeMenu);
+      });
+      
+      shopNameToggle.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (!shopNameToggle.disabled) {
+          closeDropdown(shopTypeToggle, shopTypeMenu);
+          toggleDropdown(shopNameToggle, shopNameMenu);
+        }
+      });
+      
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".custom-dropdown")) {
+          closeDropdown(shopTypeToggle, shopTypeMenu);
+          closeDropdown(shopNameToggle, shopNameMenu);
+        }
+      });
+    }
+    
+    // Load shop types
+    async function loadShopTypes() {
+      try {
+        loadingDiv.classList.add("show");
+        const response = await fetch("/api/shop-types");
+        shopTypes = await response.json();
+        
+        shopTypeMenu.innerHTML = "";
+        shopTypes.forEach(type => {
+          const li = document.createElement("li");
+          li.textContent = type;
+          li.dataset.value = type;
+          li.addEventListener("click", () => selectShopType(type, li));
+          shopTypeMenu.appendChild(li);
+        });
+        
+        loadingDiv.classList.remove("show");
+      } catch (error) {
+        console.error("Error loading shop types:", error);
+        loadingDiv.classList.remove("show");
+        errorDiv.textContent = "Chyba při načítání typů prodejen";
+        errorDiv.classList.add("show");
+      }
+    }
+    
+    // Load all shops
+    async function loadShops() {
+      try {
+        const response = await fetch("/api/shops");
+        allShops = await response.json();
+      } catch (error) {
+        console.error("Error loading shops:", error);
+        errorDiv.textContent = "Chyba při načítání obchodů z databáze";
+        errorDiv.classList.add("show");
+      }
+    }
+    
+    // Select shop type
+    function selectShopType(type, element) {
+      selectedShopType = type;
+      selectedShopName = "";
+      
+      // Update toggle text
+      shopTypeToggle.innerHTML = `<span>${type}</span>`;
+      shopTypeToggle.classList.add("active");
+      
+      // Remove selected state from all items
+      shopTypeMenu.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+      element.classList.add("selected");
+      
+      // Close dropdown
+      closeDropdown(shopTypeToggle, shopTypeMenu);
+      
+      // Filter and populate shops
+      filterAndPopulateShops(type);
+      
+      // Enable shop name dropdown
+      shopNameToggle.disabled = false;
+      shopNameToggle.classList.remove("active");
+      shopNameToggle.innerHTML = `<span class="dropdown-placeholder">-- Vyberte obchod --</span>`;
+      
+      errorDiv.classList.remove("show");
+    }
+    
+    // Filter shops by type
+    function filterAndPopulateShops(type) {
+      let filteredShops;
+      
+      // Pokud je vybrán "online", zobraz všechny obchody s online (online i online+offline)
+      if (type === "online") {
+        filteredShops = allShops.filter(shop => shop.ShopType.includes("online"));
+      } else {
+        // Jinak zobraz jen ty, které přesně odpovídají vybranému typu
+        filteredShops = allShops.filter(shop => shop.ShopType === type);
+      }
+      
+      // Seřaď obchody abecedně od A do Z
+      filteredShops.sort((a, b) => {
+        return a.ShopName.localeCompare(b.ShopName, 'cs');
+      });
+      
+      shopNameMenu.innerHTML = "";
+      filteredShops.forEach(shop => {
+        const li = document.createElement("li");
+        li.textContent = shop.ShopName;
+        li.dataset.value = shop.ShopName;
+        li.addEventListener("click", () => selectShopName(shop.ShopName, li));
+        shopNameMenu.appendChild(li);
+      });
+      
+      // Update result count
+      updateResultCount(filteredShops.length);
+    }
+    
+    // Select shop name
+    function selectShopName(name, element) {
+      selectedShopName = name;
+      
+      // Update toggle text
+      shopNameToggle.innerHTML = `<span>${name}</span>`;
+      shopNameToggle.classList.add("active");
+      
+      // Remove selected state from all items
+      shopNameMenu.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+      element.classList.add("selected");
+      
+      // Close dropdown
+      closeDropdown(shopNameToggle, shopNameMenu);
+    }
+    
+    printButton.addEventListener("click", function() {
+      window.print();
+    });
+    
+    confirmButton.addEventListener("click", function() {
+      if (!selectedShopType || !selectedShopName) {
+        errorDiv.textContent = "Prosím, vyberte obchod i typ prodejny";
+        errorDiv.classList.add("show");
+        return;
+      }
 
-        // Load last update
-        fetch('/api/last-update')
-            .then(response => response.json())
-            .then(data => {
-                const updateDiv = document.getElementById('last-update');
-                updateDiv.innerHTML = '<h2>Last Update</h2><p>' + new Date(data.lastUpdate).toLocaleString() + '</p>';
-            })
-            .catch(error => console.error('Error loading last update:', error));
-    </script>
+      // Build map filter URL for the selected shop
+      const filterValue = `Shops/name eq '${selectedShopName}'`;
+      const filterParam = `&$filter=${encodeURIComponent(filterValue)}`;
+      mapIframe.src = baseMapUrl + extraMapParams + filterParam;
+      mapContainer.classList.add("show");
+
+      resultText.textContent = `Vybrali jste obchod: ${selectedShopName} (${selectedShopType})`;
+      resultDiv.classList.add("show");
+      errorDiv.classList.remove("show");
+
+      const selectedShop = allShops.find(shop => shop.ShopName === selectedShopName);
+      if (selectedShop && selectedShop.Website) {
+        window.open(selectedShop.Website.trim(), '_blank');
+      }
+    });
+    
+    // Handle form reset
+    form.addEventListener("reset", function() {
+      selectedShopType = "";
+      selectedShopName = "";
+      
+      shopTypeToggle.innerHTML = `<span class="dropdown-placeholder">-- Vyberte typ prodejny --</span>`;
+      shopTypeToggle.classList.remove("active");
+      shopTypeMenu.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+      
+      shopNameToggle.innerHTML = `<span class="dropdown-placeholder">-- Vyberte obchod --</span>`;
+      shopNameToggle.classList.remove("active");
+      shopNameToggle.disabled = true;
+      shopNameMenu.innerHTML = "";
+      shopNameMenu.querySelectorAll("li").forEach(li => li.classList.remove("selected"));
+      
+      resultDiv.classList.remove("show");
+      errorDiv.classList.remove("show");
+      updateResultCount(0);
+      
+      closeDropdown(shopTypeToggle, shopTypeMenu);
+      closeDropdown(shopNameToggle, shopNameMenu);
+      
+      // Hide map container and reset its URL
+      mapIframe.src = baseMapUrl + extraMapParams;
+      mapContainer.classList.remove("show");
+    });
+
+    // Format date to Czech format: DD.MM.YYYY HH:mm
+    function formatDateToCzech(dateString) {
+      const date = new Date(dateString);
+      date.setHours(date.getHours() + 2);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${day}.${month}.${year} ${hours}:${minutes}`;
+    }
+
+    // Load last database update
+    async function loadLastUpdate() {
+      try {
+        const response = await fetch("/api/last-update");
+        const data = await response.json();
+        
+        if (data.lastUpdate) {
+          const formattedDate = formatDateToCzech(data.lastUpdate);
+          document.getElementById("lastUpdate").textContent = formattedDate;
+        } else {
+          document.getElementById("lastUpdate").textContent = "Není k dispozici";
+        }
+      } catch (error) {
+        console.error("Error loading last update:", error);
+        document.getElementById("lastUpdate").textContent = "Chyba při načítání";
+      }
+    }
+    
+    // Load data on page load
+    window.addEventListener("load", function() {
+      setupDropdownListeners();
+      loadShops();
+      loadShopTypes();
+      loadLastUpdate();
+    });
+  </script>
+
+  <footer>
+    Ceny jsou uvedeny bez započtení akcí a slev. Data jsou zadávána ručně, a proto mohou obsahovat chyby. Poslední aktualizace databáze: <span id="lastUpdate">Načítání...</span>
+  </footer>
 </body>
 </html>

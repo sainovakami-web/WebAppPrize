@@ -38,7 +38,7 @@ app.get("/api/shops", async (req, res) => {
     await pool.connect();
     
     const result = await pool.request()
-      .query("SELECT DISTINCT TRIM(ShopName) as ShopName, TRIM(ShopType) as ShopType FROM Shops ORDER BY ShopName");
+      .query("SELECT DISTINCT TRIM(ShopName) as ShopName, TRIM(ShopType) as ShopType, TRIM(Website) as Website FROM Shops ORDER BY ShopName");
     
     await pool.close();
     res.json(result.recordset);
